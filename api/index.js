@@ -12,7 +12,7 @@ app.get('/home', (req, res) => {
 });
 
 app.post('/test', (req, res) => {
-  console.log("HI")
+  console.log(req.body)
   const charge = req.body;
   const received = charge.hashed_order;
   const calculated = createHmac('sha256', 'e92064ab-0799-467c-8876-25bb1a393422').update(charge.id).digest('hex');
