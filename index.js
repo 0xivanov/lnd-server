@@ -6,7 +6,7 @@ const port = 3001; // Choose a port for your API
 // Middleware to parse JSON requests
 app.use(express.json());
 
-app.get('', (req, res) => {
+app.get('/home', (req, res) => {
   res.end(`Hello! Go to item:`);
 });
 
