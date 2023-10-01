@@ -12,10 +12,10 @@ app.use(cors())
 
 const verifiedPayments = new Array();
 
-app.get('/sse', (req, res, next) => {
+app.get('/sse', (req, res) => {
   res.flush = () => { };
-  next();
-}, sse.init)
+  sse.init(req, res);
+})
 
 app.post('/send-event', (req, res) => {
   const message = req.body;
