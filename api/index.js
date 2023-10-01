@@ -1,45 +1,44 @@
 const express = require('express');
-const crypto = require('crypto');
+const SSE = require('express-sse');
+const cors = require("cors");
 const { createHmac } = require('node:crypto');
 const app = express();
 const port = 3001; // Choose a port for your API
+const sse = new SSE();
 
-// Middleware to parse JSON requests
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+app.use(cors())
 
-app.get('/home', (req, res) => {
-  res.end(`Hello! Go to item:`);
+const verifiedPayments = new Array();
+
+app.get('/sse', (req, res, next) => {
+  res.flush = () => { };
+  next();
+}, sse.init)
+
+app.post('/send-event', (req, res) => {
+  const message = req.body;
+
+  console.log(message)
+  sse.send(message);
+
+  res.json({ success: true });
 });
 
-app.post('/test', (req, res) => {
-  console.log(req.body)
+app.post('/payment', (req, res) => {
   const charge = req.body;
+  const paymentId = charge.id
   const received = charge.hashed_order;
   const calculated = createHmac('sha256', 'e92064ab-0799-467c-8876-25bb1a393422').update(charge.id).digest('hex');
   if (received === calculated) {
     console.log("signiture is valid")
+    verifiedPayments.push(paymentId)
+    sse.send(paymentId);
     res.status(200).json({ message: 'payment received successfully' });
   }
   else {
     console.log("signiture is invalid")
-  }
-});
-
-app.post('/payment', (req, res) => {
-  try {
-    const charge = req.body;
-    const received = charge.hashed_order;
-    const calculated = crypto.createhmac('sha256', 'e92064ab-0799-467c-8876-25bb1a393422').update(charge.id).digest('hex');
-    if (received === calculated) {
-      console.log("signiture is valid")
-      res.status(200).json({ message: 'payment received successfully' });
-    }
-    else {
-      console.log("signiture is invalid")
-    }
-  } catch (error) {
-    console.log(error)
   }
 });
 
